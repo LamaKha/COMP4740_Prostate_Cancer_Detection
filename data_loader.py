@@ -1,12 +1,9 @@
 import pandas as pd
 
-def load_data(name):
+def load_and_process_data(file_name):
     
-    # Load the data from a CSV
-    return pd.read_csv('prad_tcga_genes.csv')
+    data = pd.read_csv(file_name)
 
-
-def preprocess_data(data):
     # Set index to ID values (otherwise keys are wrong after transposition)
     data = data.set_index('ID')
     
@@ -16,4 +13,10 @@ def preprocess_data(data):
     # Remove the features that only contain 0 values
     data = data.loc[:, (data != 0).any(axis=0)]
     
-    return data
+    # Identify independant and dependant variables
+    # Remove the last 6 columns
+    X = data.iloc[:, : -6]
+    # Temporarily setting target variable to 'GLEASON_PATTERN_PRIMARY'
+    y = data.iloc[:, -5]
+    
+    return X, y
