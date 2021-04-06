@@ -3,7 +3,7 @@
 ENSG00000275403.1 -> column with only zeros
 
 '''
-from data_loader.py import load_data, preprocess_data
+from data_loader import load_data, preprocess_data
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, chi2
