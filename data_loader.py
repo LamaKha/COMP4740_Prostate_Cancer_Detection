@@ -38,6 +38,6 @@ def load_and_process_data(file_name):
     # Remove the last 6 columns
     X = data.iloc[:, : -6]
     # Temporarily setting target variable to 'GLEASON_PATTERN_PRIMARY'
-    y = data['GRADE_GROUP']
+    y = data['GLEASON_SCORE']
 
     return X, y
