@@ -1,6 +1,6 @@
 #Use this file to
 #test all classifiers after initial feature selection ONLY
-#It takes less than full testing but longer than second testing
+#It takes less than full testing but longer than second testing (about 10 minutes)
 
 import pandas as pd
 from sklearn.svm import SVC
