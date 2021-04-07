@@ -1,7 +1,7 @@
 #Use this file to
 #test all classifiers after initial feature selection
 #and after additional feature selection
-#it takes the logest amount of time to run (about 10 mins)
+#it takes the logest amount of time to run (about 12 minutes)
 
 import pandas as pd
 from sklearn.svm import SVC
