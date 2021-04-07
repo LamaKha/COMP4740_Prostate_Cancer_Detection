@@ -1,8 +1,3 @@
-#Use this file to
-#test all classifiers after initial feature selection
-#and after additional feature selection
-#it takes the logest amount of time to run (about 12 minutes)
-
 import pandas as pd
 from sklearn.svm import SVC
 from collections import Counter
@@ -67,40 +62,6 @@ scaled_data = scaler.fit_transform(best_x)
 # Eliminating low variance features
 selector = VarianceThreshold()
 var_thres = selector.fit_transform(scaled_data)
-
-#Initial Testing of Classifiers--------------------------------------------------------------------------------------
-print("==============================================================================================================")
-print("Testing of Classifiers After Applying Initial Feature Selection Methods")
-print("==============================================================================================================")
-#SVM
-clf = SVC(gamma='auto')
-scores_svm = cross_val_score(clf, x, y, scoring='accuracy', cv=10)
-print("Accuracy scores for SVM-RBF algorithm on Original dataset : \n", scores_svm, '\n')
-print("Mean Accuracy :", scores_svm.mean(), '\n')
-print("==============================================================================================================")
-#Naive Bayes
-gnb = GaussianNB()
-scores = cross_val_score(gnb, x, y, scoring='accuracy', cv=10)
-print("Accuracy scores for Gaussian Naive Bayes algorithm on Original dataset : \n", scores, '\n')
-print("Mean Accuracy :", scores.mean(), '\n')
-print("==============================================================================================================")
-# Random Forest on Original Dataset
-rf = RandomForestClassifier(n_estimators=100, n_jobs=-1, max_depth=10, max_features='auto')
-scores = cross_val_score(rf, x, y, scoring='accuracy', cv=10)
-print("Accuracy scores for Random Forest algorithm on Original dataset : \n", scores, '\n')
-print("Mean Accuracy :", scores.mean(), '\n')
-print("==============================================================================================================")
-# KNN neighbours on original dataset
-k_scores = []
-# Calculating best values for K values between 1 and 20
-for i in range(1, 21):
-    knn = KNeighborsClassifier(n_neighbors=i)
-    scores = cross_val_score(knn, x, y, cv=10, scoring='accuracy')
-    k_scores.append(scores.mean())
-print("Accuracy scores for K-NN algorithm on Original dataset : \n", scores, '\n')
-print(k_scores)
-print("Mean Accuracy :", scores.mean(), '\n')
-print("==============================================================================================================")
 
 #Additional Feature Selection Methods---------------------------------------------------------------------------------
 
