@@ -1,6 +1,6 @@
 #Use this file to
 #after additional feature selection ONLY
-#It takes the lest amount of time to run
+#It takes the lest amount of time to run (2 minutes)
 
 import pandas as pd
 from sklearn.svm import SVC
@@ -71,7 +71,7 @@ clf = clf.fit(var_thres,y_no_outliers)
 
 model = SelectFromModel(clf, prefit=True)
 X_new_gleason = model.transform(var_thres)
-
+print("==============================================================================================================")
 #Resampling dataset
 sme = SMOTEENN(random_state=42,smote=SMOTE(random_state=42))
 X_res_smoteenn, y_res_smoteenn = sme.fit_resample(x_no_outliers, y_no_outliers)
