@@ -97,16 +97,15 @@ def data_profile(X, y, phase):
 def feature_selection(X, y, n):
     """
     feature_selection performs a series of feature selection steps on the 
-    data. 
-    load_and_process_data reads a csv from the working directory, 
-    transposes the resulting dataframe (so the rows of the original CSV 
-    become the features), removes any features that contain 0 values, adds
-    GRADE_GROUP as a dependant variable (if desired) and returns the 
-    feature matrix and target variable matrix (which can be set by the user).
+    data. First the features are passed through a Chi2 filter and the 'n'
+    best features are selected. Then the features are transformed using a 
+    standard scaler (normalized). Then 0 variance features are removed. Lastly, 
+    another round of feature selection is performed, using a random forest.
 
-    :param file_name: the name of the file ('example.csv')
-    :param target: the name of the row containing the dependant variable
-    :return: X (the feature matrix) and y (the target matrix)
+    :param X: the feature matrix (numpy array)
+    :param y: the target matrix (numpy array)
+    :param n: the number of features to select with Chi2 filter (int)
+    :return: X_select - the feature matrix (numpy array)
     """ 
     # Apply Chi2 filter to reduce eliminate unimportant features
     bestfeatures = SelectKBest(score_func=chi2, k=n)
@@ -125,23 +124,54 @@ def feature_selection(X, y, n):
     clf = RandomForestClassifier(n_estimators=100)
     clf = clf.fit(X_threshold, y)
     model = SelectFromModel(clf, prefit=True)
-    X_forest = model.transform(X_threshold)
+    X_select = model.transform(X_threshold)
     
-    return X_forest
+    return X_select
 
 def fix_imbalance(X, y, seed):
+    """
+    fix_imbalance applies a Synthetic Minority Over-sampling Technique (SMOTE)
+    to upsample the minority classes. It then uses an Edited Nearest Neibor
+    (ENN) technique to downsample over-represented classes.
+
+    :param X: the feature matrix (numpy array)
+    :param y: the target matrix (numpy array)
+    :param seed: the value used to seed the random number generator (int)
+    :return: X_smoteen, y_smoteen - the augmented feature and target matrices (numpy arrays)
+    """
     sme = SMOTEENN(random_state=seed, smote=SMOTE(random_state=seed, k_neighbors=1))
     X_smoteen, y_smoteen = sme.fit_resample(X, y)
     
     return X_smoteen, y_smoteen    
     
 def reduce_dimensions(X, y, n_dim):
+    """
+    reduce_dimensions performs dimensionality reduction by applying 
+    linear discriminant analysis. This can boost classification results 
+    (although we lose the connection between the features and the result).
+    :param X: the feature matrix (numpy array)
+    :param y: the target matrix (numpy array)
+    :param n_dim: the number of features after transformation (int)
+    :return: X_lda - the transformed feature matrix (numpy array)
+    """
     lda = LinearDiscriminantAnalysis(n_components = n_dim)
     X_lda = lda.fit_transform(X, y)
     
     return X_lda
 
-def classify(X, y, classifier, n_folds, hyperparameters = None):   
+def classify(X, y, classifier, n_folds, hyperparameters = None):
+    """
+    classify classifies the data using one of four classifiers: Naive Bayes, 
+    Support Vector Machine, Random Forest, or K Nearest Neighbor.
+
+    :param X: the feature matrix (numpy array)
+    :param y: the target matrix (numpy array)
+    :param classifier: the name of the classifier to be used (string)
+    :param n_folds: the number of folds to use in cross validation
+    :return: model (an untrained classification model)
+             scores - a list of accuracies produced through cross validation (float list)
+             average - the average accuracy for all rounds of cross validation (float)
+    """
     # Naive Bayes Classifier
     if (classifier == 'Naive Bayes'):
         model = GaussianNB()
@@ -197,6 +227,16 @@ def find_best_k(X, y, k):
     return best_k
 
 def display_results(model_name, scores, average):
+    """
+    display_results displays the results obtained via classification of the 
+    data: the model applied, the accuracies achieved through each fold of
+    cross validation, and the average accuracy.
+
+    :param model_name: the model used for classification (string)
+    :param scores: the accuracies achieved through cross validation (float array)
+    :param average: the average accuracy (float)
+    :return: None
+    """
     print_divider()
     print("Model: ", model_name)
     print("Accuracy Scores: ")
