@@ -29,32 +29,46 @@ n_models = len(model_names)
 scores = []
 averages = []
 models = []
+confusions = []
+metrics = []
 for i in range(n_models):
-    m, s, a = pl.classify(X_balanced, y_balanced, model_names[i], N_FOLDS)
+    m, s, a, c, z = pl.classify(X_balanced, y_balanced, model_names[i], N_FOLDS)
     models.append(m)
     scores.append(s)
     averages.append(a)
+    confusions.append(c)
+    metrics.append(z)
     
 # Display results ------------------------------------------------------------
 for i in range(n_models):
     pl.display_results(model_names[i], scores[i], averages[i])
+    print(confusions[i])
+    print(metrics[i])
 
 # Perform classification after dimensionality reduction ----------------------
+pl.print_divider()
+pl.print_divider()
 print("RESULTS AFTER DIMENSIONALITY REDUCTION")
 model_names = ['Naive Bayes', 'Support Vector Machine', 'Random Forest', 'K Nearest Neighbors']
 n_models = len(model_names)
 scores = []
 averages = []
 models = []
+confusions = []
+metrics = []
 for i in range(n_models):
-    m, s, a = pl.classify(X_reduced, y_balanced, model_names[i], N_FOLDS)
+    m, s, a, c, z= pl.classify(X_reduced, y_balanced, model_names[i], N_FOLDS)
     models.append(m)
     scores.append(s)
     averages.append(a)
-    
+    confusions.append(c)
+    metrics.append(z)
+ 
 # Display results ------------------------------------------------------------
 for i in range(n_models):
     pl.display_results(model_names[i], scores[i], averages[i])
+    print(confusions[i])
+    print(metrics[i])
 
-    
+#############################################################################
     
