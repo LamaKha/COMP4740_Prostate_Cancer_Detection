@@ -1,8 +1,9 @@
 import pandas as pd
 from collections import Counter
-from sklearn.svm import SVC
 from imblearn.combine import SMOTEENN
 from imblearn.over_sampling import SMOTE
+from matplotlib import pyplot as plt
+from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
@@ -111,6 +112,7 @@ def feature_selection(X, y, n):
     bestfeatures = SelectKBest(score_func=chi2, k=n)
     fit = bestfeatures.fit(X, y)
     X_filtered = fit.transform(X)
+    plot_best_scores(fit, X)
     
     # Normalize the remaining features
     scaler = StandardScaler()
@@ -244,6 +246,30 @@ def display_results(model_name, scores, average):
     print("Average accuracy: ", average)
     print_divider()
   
+def plot_best_scores(model, X):
+    """
+    plot_best_scores plots the 10 features that obtained the highest scores
+    via Chi2 selection on a bar chart.
+
+    :param model: the fit model
+    :param X: a Dataframe containing the scores and feature names
+    :return: None
+    """
+    dfscores = pd.DataFrame(model.scores_)
+    dfcolumns = pd.DataFrame(X.columns)
+    featureScores = pd.concat([dfcolumns,dfscores],axis=1)
+    featureScores.columns = ['Features','Score']  #naming the dataframe columns
+
+    # OPTIONAL PLOTTING
+    scores_array = featureScores.nlargest(10,'Score')
+    scores_list = scores_array['Score'].tolist()
+    features_list = scores_array['Features'].tolist()
+    plt.bar(features_list, scores_list)
+    plt.title("Most Relevant Features by Chi2 Score", fontsize = 18)
+    plt.xlabel("Exon ID", fontsize = 16)
+    plt.ylabel("Chi2 Score", fontsize = 16)
+    plt.xticks(rotation=90)
+    plt.show()
 
     
     
