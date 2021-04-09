@@ -7,10 +7,11 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import cross_val_score, KFold
+from sklearn.model_selection import cross_val_predict, cross_val_score, KFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, chi2, SelectFromModel
+from sklearn.metrics import confusion_matrix
 
 
 def load_and_process_data(file_name, target):
@@ -173,6 +174,7 @@ def classify(X, y, classifier, n_folds, hyperparameters = None):
     :return: model (an untrained classification model)
              scores - a list of accuracies produced through cross validation (float list)
              average - the average accuracy for all rounds of cross validation (float)
+             cm - the confusion matrix
     """
     # Naive Bayes Classifier
     if (classifier == 'Naive Bayes'):
@@ -192,7 +194,12 @@ def classify(X, y, classifier, n_folds, hyperparameters = None):
     # Find the average accuracy
     average = scores.mean()
     
-    return model, scores, average
+    # Obtain the confusion matrix
+    y_pred = cross_val_predict(model, X, y, cv = n_folds)
+    cm = confusion_matrix(y, y_pred)   
+    metrics = analyze_cm(cm, len(y))
+    
+    return model, scores, average, cm, metrics
     
 def find_best_k(X, y, k):  
     """
@@ -243,7 +250,7 @@ def display_results(model_name, scores, average):
     print("Model: ", model_name)
     print("Accuracy Scores: ")
     print(scores)
-    print("Average accuracy: ", average)
+    print("Average accuracy: ", round(average, 5))
     print_divider()
   
 def plot_best_scores(model, X):
@@ -251,8 +258,8 @@ def plot_best_scores(model, X):
     plot_best_scores plots the 10 features that obtained the highest scores
     via Chi2 selection on a bar chart.
 
-    :param model: the fit model
-    :param X: a Dataframe containing the scores and feature names
+    :param model: the fit model (object)
+    :param X: a Dataframe containing the scores and feature names (Dataframe)
     :return: None
     """
     dfscores = pd.DataFrame(model.scores_)
@@ -271,8 +278,138 @@ def plot_best_scores(model, X):
     plt.xticks(rotation=90)
     plt.show()
 
+def analyze_cm(cm, n):
+    """
+    analyze_cm takes a confusion matrix as input and returns several
+    measures: accuracy, sensitivity, specificity, precision, and NPV.
+
+    :param cm: a confusion matrix (numpy array)
+    :param n: The total number of samples (int)
+    :return: A dictionary containing the metrics
+    """
+    # Expected VS Actual Probabilities
+    pBB = cm[0, 0]
+    pHB = cm[0, 1]
+    pLB = cm[0, 2]
+    pNB = cm[0, 3]
+    pZB = cm[0, 4]
     
+    pBH = cm[1, 0]
+    pHH = cm[1, 1]
+    pLH = cm[1, 2]
+    pNH = cm[1, 3]
+    pZH = cm[1, 4]
     
+    pBL = cm[2, 0]
+    pHL = cm[2, 1]
+    pLL = cm[2, 2]
+    pNL = cm[2, 3]
+    pZL = cm[2, 4]
+    
+    pBN = cm[3, 0]
+    pHN = cm[3, 1]
+    pLN = cm[3, 2]
+    pNN = cm[3, 3]
+    pZN = cm[3, 4]
+    
+    pBZ = cm[4, 0]
+    pHZ = cm[4, 1]
+    pLZ = cm[4, 2]
+    pNZ = cm[4, 3]
+    pZZ = cm[4, 4]
+    
+    # True Positives
+    tpB = pBB
+    tpH = pHH
+    tpL = pLL
+    tpN = pNN
+    tpZ = pZZ
+    
+    tp = tpB + tpH + tpL + tpN + tpZ
+    
+    # True Negatives
+    tnB = pHH + pLH + pNH + pZH + pHL + pLL + pNL + pZL + pHN + pLN + pNN + pZN + pHZ + pLZ + pNZ + pZZ
+    tnH = pBB + pLB + pNB + pZB + pBL + pLL + pNL + pZL + pBN + pLN + pNN + pZN + pBZ + pLZ + pNZ + pZZ
+    tnL = pBB + pHB + pNB + pZB + pBH + pHH + pNH + pZH + pBN + pHN + pNN + pZN + pBZ + pHZ + pNZ + pZZ
+    tnN = pBB + pHB + pLB + pZB + pBH + pHH + pLH + pZH + pBL + pHL + pLL + pZL + pBZ + pHZ + pLZ + pZZ
+    tnZ = pBB + pHB + pLB + pNB + pBH + pHH + pLH + pNH + pBL + pHL + pLL + pNL + pBN + pHN + pLN + pNN
+    
+    # False Positives
+    fpB = pBH + pBL + pBN + pBZ
+    fpH = pHB + pHL + pHN + pHZ
+    fpL = pLB + pLH + pLN + pLZ
+    fpN = pNB + pNH + pNL + pNZ
+    fpZ = pZB + pZH + pZL + pZN
+    
+    # False Negatives
+    fnB = pHB + pLB + pNB + pZB
+    fnH = pBH + pLH + pNH + pZH
+    fnL = pBL + pHL + pNL + pZL
+    fnN = pBN + pHN + pLN + pZN
+    fnZ = pBZ + pHZ + pLZ + pNZ
+    
+    # TPR (Sensitivity) -> TP / (TP + FN)
+    sensitivity = {}
+    sensitivity['B'] = tpB / (tpB + fnB)
+    sensitivity['H'] = tpH / (tpH + fnH)
+    sensitivity['L'] = tpL / (tpL + fnL)
+    sensitivity['N'] = tpN / (tpN + fnN)
+    sensitivity['Z'] = tpZ / (tpZ + fnZ)
+    
+    average_sensitivity = 0
+    for k, v in sensitivity.items():
+        average_sensitivity = average_sensitivity + v
+    average_sensitivity = average_sensitivity / len(sensitivity) 
+    
+    # TNR (Specificity) -> TN / (TN + FP)
+    specificity = {}
+    specificity['B'] = tnB / (tnB + fnB)
+    specificity['H'] = tnH / (tnH + fnH)
+    specificity['L'] = tnL / (tnL + fnL)
+    specificity['N'] = tnN / (tnN + fnN)
+    specificity['Z'] = tnZ / (tnZ + fnZ)
+    
+    average_specificity = 0
+    for k, v in specificity.items():
+        average_specificity = average_specificity + v
+    average_specificity = average_specificity / len(specificity) 
+    
+    # PPV (Precision) -> TP / (TP + FP)
+    precision = {}
+    precision['B'] = tpB / (tpB + fpB)
+    precision['H'] = tpH / (tpH + fpH)
+    precision['L'] = tpL / (tpL + fpL)
+    precision['N'] = tpN / (tpN + fpN)
+    precision['Z'] = tpZ / (tpZ + fpZ)
+    
+    average_precision = 0
+    for k, v in precision.items():
+        average_precision = average_precision + v
+    average_precision = average_precision / len(precision) 
+    
+    # NPV -> TN / (TN + FN)
+    npv = {}
+    npv['B'] = tnB / (tnB + fnB)
+    npv['H'] = tnH / (tnH + fnH)
+    npv['L'] = tnL / (tnL + fnL)
+    npv['N'] = tnN / (tnN + fnN)
+    npv['Z'] = tnZ / (tnZ + fnZ) 
+    
+    average_npv = 0
+    for k, v in npv.items():
+        average_npv = average_npv + v
+    average_npv = average_npv / len(npv)
+    
+    # Accuracy
+    accuracy = tp / n
+    
+    metrics = {'Accuracy': round(accuracy, 4),
+               'Sensitivity': round(average_sensitivity, 4), 
+               'Specificity': round(average_specificity, 4), 
+               'Precision': round(average_precision, 4), 
+               'NPV': round(average_npv, 4)}
+
+    return metrics
     
     
     
