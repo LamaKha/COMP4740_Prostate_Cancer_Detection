@@ -5,26 +5,29 @@ K_BEST = 15000  # The number of features to select using Chi2 filter
 N_DIM = 3       # The number of dimensions (dimensionality reduction)
 N_FOLDS = 8     # The number of folds to use in cross-fold validation
  
-# Load and process the data and return the feature and target matrices -------
+# Load and process the data and return the feature and target matrices -
 X, y = pl.load_and_process_data('prad_tcga_genes.csv', 'GLEASON_SCORE')
 
-# Display the data profile ---------------------------------------------------
+# Display the data profile ---------------------------------------------
 pl.data_profile(X, y, 'INITIAL')
 
-# Perform feature selection --------------------------------------------------
+# Perform feature selection --------------------------------------------
 X_select = pl.feature_selection(X, y, K_BEST)
 
-# Perform up-sampling and down-sampling to address class imbalance -----------
+# Perform up-sampling and down-sampling to address class imbalance -----
 X_balanced, y_balanced = pl.fix_imbalance(X_select, y, SEED)
 
-# Display the updated data profile -------------------------------------------
+# Display the updated data profile -------------------------------------
 pl.data_profile(X_balanced, y_balanced, 'IMBALANCE ADJUSTED')
 
-# Perform dimensionality reduction (optional) --------------------------------
+# Perform dimensionality reduction (optional) --------------------------
 X_reduced = pl.reduce_dimensions(X_balanced, y_balanced, N_DIM)
 
-# Perform classification -----------------------------------------------------
-model_names = ['Naive Bayes', 'Support Vector Machine', 'Random Forest', 'K Nearest Neighbors']
+# Perform classification -----------------------------------------------
+model_names = ['Naive Bayes', 
+               'Support Vector Machine', 
+               'Random Forest', 
+               'K Nearest Neighbors']
 n_models = len(model_names)
 scores = []
 averages = []
@@ -32,24 +35,28 @@ models = []
 confusions = []
 metrics = []
 for i in range(n_models):
-    m, s, a, c, z = pl.classify(X_balanced, y_balanced, model_names[i], N_FOLDS)
+    m, s, a, c, z = pl.classify(X_balanced, y_balanced, 
+                                model_names[i], N_FOLDS)
     models.append(m)
     scores.append(s)
     averages.append(a)
     confusions.append(c)
     metrics.append(z)
     
-# Display results ------------------------------------------------------------
+# Display results ------------------------------------------------------
 for i in range(n_models):
     pl.display_results(model_names[i], scores[i], averages[i])
     print(confusions[i])
     print(metrics[i])
 
-# Perform classification after dimensionality reduction ----------------------
+# Perform classification after dimensionality reduction ----------------
 pl.print_divider()
 pl.print_divider()
 print("RESULTS AFTER DIMENSIONALITY REDUCTION")
-model_names = ['Naive Bayes', 'Support Vector Machine', 'Random Forest', 'K Nearest Neighbors']
+model_names = ['Naive Bayes', 
+               'Support Vector Machine', 
+               'Random Forest', 
+               'K Nearest Neighbors']
 n_models = len(model_names)
 scores = []
 averages = []
@@ -57,18 +64,18 @@ models = []
 confusions = []
 metrics = []
 for i in range(n_models):
-    m, s, a, c, z= pl.classify(X_reduced, y_balanced, model_names[i], N_FOLDS)
+    m, s, a, c, z= pl.classify(X_reduced, y_balanced, 
+                               model_names[i], N_FOLDS)
     models.append(m)
     scores.append(s)
     averages.append(a)
     confusions.append(c)
     metrics.append(z)
  
-# Display results ------------------------------------------------------------
+# Display results ------------------------------------------------------
 for i in range(n_models):
     pl.display_results(model_names[i], scores[i], averages[i])
     print(confusions[i])
     print(metrics[i])
 
-#############################################################################
     
